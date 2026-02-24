@@ -13,6 +13,9 @@ import kotlinx.coroutines.launch
 
 class SimonViewModel : ViewModel() {
     val juego = SimonDice()
+    var ronda by mutableStateOf(0)
+    var puntos by mutableStateOf(0)
+
     val texto by derivedStateOf{
         when (estadoJuego) {
             EstadoJuego.INICIO -> "Presiona el botón para iniciar"
@@ -26,8 +29,14 @@ class SimonViewModel : ViewModel() {
 
     fun generarSecuencia() {
         viewModelScope.launch {
+            if (estadoJuego == EstadoJuego.JUEGO_TERMINADO) {
+                juego.reiniciarJuego()
+                ronda = 0
+                puntos = 0
+            }
             estadoJuego = EstadoJuego.MOSTRANDO_SECUENCIA
             juego.agregarNuevoColor()
+            ronda++
             // Aquí podrías agregar lógica para mostrar la secuencia al usuario
             juego.secuenciaJugador.clear()
             delay(500)
@@ -49,6 +58,7 @@ class SimonViewModel : ViewModel() {
         }else if (juego.secuenciaJugador.size == juego.secuenciaComputador.size) {
             viewModelScope.launch {
                 delay(500)
+                puntos++
                 generarSecuencia()
             }
         }

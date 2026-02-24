@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.iniciosimondice.ui.theme.InicioSimonDiceTheme
 import com.example.iniciosimondice.ui.theme.SimonViewModel
 
@@ -53,11 +54,18 @@ fun botonesColores() {
     val viewModel = remember { SimonViewModel() }
     val iluminado = viewModel.iluminado
     val estadoJuego = viewModel.estadoJuego
+    val ronda = viewModel.ronda
+    val punto = viewModel.puntos
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center
     ) {
         Text(viewModel.texto)
+        Row {
+            Text(text = "Puntos: $punto")
+            Text(text = "Ronda: $ronda", modifier = Modifier.padding(16.dp), fontSize = 35.sp)
+        }
         Row {
             repeat(2) {
                 index ->
@@ -65,7 +73,8 @@ fun botonesColores() {
                     modifier = Modifier
                         .padding(50.dp)
                         .size(100.dp)
-                        .background(colores[index].color.copy(alpha = if (index == iluminado) 1f else 0.5f), CircleShape)
+                        .clip(CircleShape)
+                        .background(colores[index].color.copy(alpha = if (index == iluminado) 1f else 0.5f))
                         .clickable(enabled = estadoJuego == EstadoJuego.ESPERANDO_RESPUESTA) {
                          viewModel.validarSecuenciaVM(index)
                         }
@@ -83,12 +92,13 @@ fun botonesColores() {
                         .clip(CircleShape)
                         .background(colores[pos].color.copy(alpha = if (pos == iluminado) 1f else 0.5f))
                         .clickable(enabled = estadoJuego == EstadoJuego.ESPERANDO_RESPUESTA) {
-                            viewModel.validarSecuenciaVM(index)                        }
+                            viewModel.validarSecuenciaVM(pos)                        }
                 )
             }
         }
         Button(
-            onClick = {viewModel.generarSecuencia()}
+            onClick = {viewModel.generarSecuencia()},
+            enabled = estadoJuego == EstadoJuego.INICIO || estadoJuego == EstadoJuego.JUEGO_TERMINADO
         ) {
             Text(text = "Iniciar")
         }

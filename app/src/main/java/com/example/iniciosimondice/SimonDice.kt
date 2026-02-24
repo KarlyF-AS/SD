@@ -11,7 +11,11 @@ class SimonDice {
     }
     fun validarSecuencia(indexColor: Int) : Boolean {
         secuenciaJugador.add(indexColor)
-        println(secuenciaJugador==secuenciaComputador.subList(0, secuenciaJugador.size))
         return secuenciaJugador==secuenciaComputador.subList(0, secuenciaJugador.size)
+    }
+    fun reiniciarJuego() {
+        secuenciaComputador.clear()
+        secuenciaJugador.clear()
+
     }
 }
