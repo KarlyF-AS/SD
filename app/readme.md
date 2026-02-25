@@ -111,3 +111,72 @@ enum class EstadoJuego(
 .clickable(enabled = estadoJuego.puedeInteractuar()) {
     viewModel.validarSecuenciaVM(index)
 }
+```
+---
+### Ejercicios:
+- cuenta atrás:
+
+```kotlin 
+  // 1. Añade esta variable arriba con las demás
+var cuentaAtras by mutableStateOf(0)
+
+// 2. Modifica la función generarSecuencia
+fun generarSecuencia() {
+    viewModelScope.launch {
+        // ... (tu código de reiniciar juego si es necesario)
+        
+        // --- AQUÍ LA CUENTA ATRÁS ---
+        for (i in 5 downTo 1) {
+            cuentaAtras = i
+            delay(1000) // Espera un segundo por número
+        }
+        cuentaAtras = 0 // Al terminar, la ocultamos o ponemos a 0
+        // ----------------------------
+
+        estadoJuego = EstadoJuego.MOSTRANDO_SECUENCIA
+        // ... (el resto de tu lógica para mostrar colores)
+    }
+}
+```
+---
+- guarda los 10 mejores:
+
+```kotlin 
+  // 1. En RecordEntity.kt:
+@PrimaryKey(autoGenerate = true) val id: Int = 0
+
+//2. En el ViewModel (actualizarRecord): Quita el id = 1.
+// CAMBIO: Quita el id fijo para que cree una fila nueva cada vez
+recordDAO.insertRecord(RecordEntity(maxRecord = puntos))
+
+// 3.En el DAO (RecordDAO.kt): Cambia la consulta para que te devuelva la lista de los mejores.
+@Query("SELECT * FROM record ORDER BY maxRecord DESC LIMIT 10")
+suspend fun getTop10Records(): List<RecordEntity>
+```
+---
+---
+- Funciones en Enums
+```kotlin 
+  enum class EstadoJuego {
+    // Cada estado debe implementar la función "mensaje" obligatoriamente
+    INICIO {
+        override fun mensaje(): String = "¡Bienvenido! Pulsa el botón para empezar."
+    },
+    MOSTRANDO_SECUENCIA {
+        override fun mensaje(): String = "Mira con atención..."
+    },
+    ESPERANDO_RESPUESTA {
+        override fun mensaje(): String = "¡Tu turno! Repite los colores."
+    },
+    JUEGO_TERMINADO {
+        override fun mensaje(): String = "¡Oh no! Has fallado. Pulsa para reintentar."
+    };
+
+    // La función se declara como 'abstract' para que cada estado la rellene
+    abstract fun mensaje(): String
+// / Cambia tu variable 'texto' por esto:
+val textoActualizado by derivedStateOf {
+    estadoJuego.mensaje() // Llama directamente a la función del Enum
+}
+}
+```
