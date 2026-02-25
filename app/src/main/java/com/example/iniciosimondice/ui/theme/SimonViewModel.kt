@@ -8,15 +8,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.iniciosimondice.EstadoJuego
 import com.example.iniciosimondice.SimonDice
+import com.example.iniciosimondice.data.DAO.RecordDAO
+import com.example.iniciosimondice.data.Entity.RecordEntity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class SimonViewModel : ViewModel() {
+class SimonViewModel(private val recordDAO: RecordDAO) : ViewModel() {
     val juego = SimonDice()
     var ronda by mutableStateOf(0)
     var puntos by mutableStateOf(0)
+    var record by mutableStateOf(0)
 
-    val texto by derivedStateOf{
+    init {
+        viewModelScope.launch {
+            record = recordDAO.getMaxRecord() ?: 0
+        }
+    }
+
+    val texto by derivedStateOf {
         when (estadoJuego) {
             EstadoJuego.INICIO -> "Presiona el botón para iniciar"
             EstadoJuego.MOSTRANDO_SECUENCIA -> "Observa la secuencia"
@@ -37,7 +46,6 @@ class SimonViewModel : ViewModel() {
             estadoJuego = EstadoJuego.MOSTRANDO_SECUENCIA
             juego.agregarNuevoColor()
             ronda++
-            // Aquí podrías agregar lógica para mostrar la secuencia al usuario
             juego.secuenciaJugador.clear()
             delay(500)
             for (colorIndex in juego.secuenciaComputador) {
@@ -55,11 +63,21 @@ class SimonViewModel : ViewModel() {
         val resultado = juego.validarSecuencia(indexColor)
         if (!resultado) {
             estadoJuego = EstadoJuego.JUEGO_TERMINADO
-        }else if (juego.secuenciaJugador.size == juego.secuenciaComputador.size) {
+            actualizarRecord()
+        } else if (juego.secuenciaJugador.size == juego.secuenciaComputador.size) {
             viewModelScope.launch {
                 delay(500)
                 puntos++
                 generarSecuencia()
+            }
+        }
+    }
+
+    private fun actualizarRecord() {
+        if (puntos > record) {
+            record = puntos
+            viewModelScope.launch {
+                recordDAO.insertRecord(RecordEntity(id = 1, maxRecord = record))
             }
         }
     }
