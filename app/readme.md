@@ -1,4 +1,4 @@
-# Guía de Supervivencia: Examen Final Simon Dice
+# Guía de Supervivencia
 
 ## 1. Patrón Singleton (Base de Datos)
 
